@@ -9,18 +9,24 @@ volatile float numberofdpulses;
 long lastencoderValue = 0;
 int time;
 float rev=0, lastmillis=0;
-float rpm=0;
 float degree=0, olddegree=0;
 int MSB = 0;
 int LSB = 0;
-float pwm = 0;
-float setPoint = -7;
-float Kp = 2;
-float Ki = 5;
-float Kd = 1;
+float rpm = 0;
+
+// CONTROLS PARAMETERS
+double rpm_normalized = 0;
+double max_rpm = 20.2;
+double pwm = 0;
+double setPointRpm;
+double setPoint_normalized;
+double Kp = 0.006;
+double Ki = .046;
+double Kd = 0;
 
 //Specify the links and initial tuning parameters
-//PID PID_controller(&rpm, &pwm, &setPoint,Kp,Ki,Kd, DIRECT);
+
+PID PidController(&rpm_normalized, &pwm, &setPoint_normalized, Kp, Ki, Kd, DIRECT);
 
 void setup() {
   Serial.begin (9600);
@@ -34,7 +40,10 @@ void setup() {
   attachInterrupt(0, updateEncoder, CHANGE); 
   attachInterrupt(1, updateEncoder, CHANGE);
 
-  analogWrite(6,pwm);        //set wheel speeds
+  setPointRpm = 15; 
+  setPoint_normalized = (setPointRpm/max_rpm)*255;
+  
+  PidController.SetMode(AUTOMATIC);
 }
 
 void loop(){ 
@@ -47,21 +56,29 @@ void loop(){
     numberofdpulses=encoderValue/4;  
     degree=numberofdpulses*(0.17); //360/2096
     rev = (degree-olddegree)/360;
-    rpm = (rev/time)*60000;
+    rpm = (rev/time)*60000; 
+    rpm_normalized = (rpm/max_rpm) * 255;    
     Serial.print("Degree ");
     Serial.println(numberofdpulses); 
     Serial.print("RPM ");
     Serial.println(rpm); 
+    Serial.print("NORMALIZED RPM ");
+    Serial.println(rpm_normalized);
     oldencodervalue=encoderValue;
     lastmillis = millis();
     olddegree=degree;
     rev=0;
     attachInterrupt(0, updateEncoder, CHANGE); 
-    attachInterrupt(1, updateEncoder, CHANGE);
-    analogWrite(6,pwm);        //set wheel speeds
-    
+    attachInterrupt(1, updateEncoder, CHANGE);    
     //delay(1000); //just here to slow down the output, and show it will work  even during a delay
+
+    Serial.print("CONTROLLER OUTPUT ");
+    Serial.println(pwm);
   }
+  //Serial.println(pwm); 
+  PidController.Compute();
+  analogWrite(6,pwm);        //set wheel speeds
+  //analogWrite(6,128);
 }
 
 
