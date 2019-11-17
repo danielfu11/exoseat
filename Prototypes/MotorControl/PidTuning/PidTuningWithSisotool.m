@@ -15,5 +15,5 @@ G_0 = 1/k;
 omega_m = (k*k)/(J*R);
 
 PlantG_s = tf([G_0 * omega_m], [1 omega_m])
-SensorH_s = 333.7;
+SensorH_s = 11.11; %333.7;
 sisotool(PlantG_s, 1, SensorH_s);
