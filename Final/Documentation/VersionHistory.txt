@@ -1,0 +1,9 @@
+Information to include in this file for each software release during the project:
+		- Date of archive 
+		- Version number 
+		- New features 
+		- Zip file containing the source code 
+		- Dependent versions of all third-party support libraries 
+		- Any special instructions for use 
+		- Known defects 
+---------------------------------------------------------------------
