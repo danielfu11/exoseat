@@ -8,6 +8,11 @@
  *
  */
 
+#include "speed_control.h"
+
+extern DCL_PID pid_controller; //initialize before interrupts turn on
+extern float reference; // controller set-point reference (rk)
+extern float saturation; // external output clamp flag (lk)
 
 void ControllerInit(void)
 {
@@ -27,7 +32,7 @@ void ControllerInit(void)
     pid_controller.Umin = -1.0f; // lower OUTPUT clamp limit
 
     reference = 0.0f; // initial value for control reference -- start with the motor off
-    satruation = 1.0f; // control loop not saturated
+    saturation = 1.0f; // control loop not saturated
 }
 
 
