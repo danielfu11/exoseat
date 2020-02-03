@@ -6,6 +6,7 @@
  */
 
 #include "DSP28x_Project.h"
+#include "speed_control.h"
 
 // CpuTimer defines
 #define CPU_FREQ_MHZ     90 // This depends on what we set in F2806x_Device.h, default is 90
@@ -20,6 +21,13 @@ __interrupt void epwm3_isr(void);
 __interrupt void adc_isr(void);
 static void configure_ePWM(void);
 static void configure_ADC(void);
+
+
+DCL_PID pid_controller = PID_DEFAULTS; //initialize before interrupts turn on
+float reference; // controller set-point reference (rk)
+float feedback; // measured feedback value (yk)
+float saturation; // external output clamp flag (lk)
+float control_output; // output of controller block (uk)
 
 void main(void)
 {
@@ -109,6 +117,10 @@ void main(void)
 
     EDIS;
 
+    /* initialize PID speed controller */
+    ControllerInit();
+
+
     // Enable CPU interrupt line INT1 which can be muxed from TINT0
     // Table 6-17 in the uC datasheet has complete mappings for each of
     // the 12 CPU interrupt lines
@@ -154,6 +166,21 @@ __interrupt void cpu_timer0_isr(void)
     // This is an example of the aforementioned registers with multiple flag bits
     // in which writing a 1 clears that flag
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
+
+    //TODO: calculate speed and convert to the range of +/- 1.0
+    //TODO: read external saturation variable
+
+    // external clamp for anti-windup reset
+    if(DCL_runClamp_C1(&saturation, 1.0f, 0.0f)) // converts saturation to 1.0f or 0.0f
+    {
+        while(1); //TODO: replace with error handling/logging if saturation occurs
+    }
+
+    // run PID controller
+    control_output = DCL_runPID_C4(&pid_controller, reference, feedback, saturation); // if saturation variable not used, make it a 1.0f
+
+    //TODO: convert control_output to PWM duty cycle and set new motor speed
+
 }
 
 __interrupt void cpu_timer1_isr(void)
