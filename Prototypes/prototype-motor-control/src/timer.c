@@ -7,7 +7,7 @@
 
 #include "inc/timer.h"
 
-static volatile bool delay_done = false;
+volatile bool delay_done = false;
 
 __interrupt void cpu_timer0_isr(void);
 
@@ -31,6 +31,7 @@ void delay_1ms(void)
     CpuTimer0Regs.TCR.all = 0x4000;
     CpuTimer0.RegsAddr->TCR.bit.TIE = 1;
     while (!delay_done);
+    delay_done = false;
 }
 
 __interrupt void cpu_timer0_isr(void)
