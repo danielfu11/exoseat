@@ -9,6 +9,8 @@
 #define INC_TIMER_H_
 
 #include "DSP28x_Project.h"
+#include "inc/commutation.h"
+#include "inc/speed_control.h"
 #include <stdbool.h>
 
 void timer_init(void);

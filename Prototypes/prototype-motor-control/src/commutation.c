@@ -10,7 +10,7 @@
 #define INDEPENDENT_PWM    1
 #define COMPLEMENTARY_PWM  0
 
-#define DUTY_CYCLE  200
+volatile Uint32 duty_cycle = 200;
 
 __interrupt void epwm1_isr(void);
 __interrupt void epwm2_isr(void);
@@ -171,14 +171,17 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     V_LOW_SIDE_ON();
-                    EPwm3Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm3Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
                     // Enable interrupts for U and W ePWM
                     // to toggle PWM duty cycles
-                    EPwm1Regs.ETSEL.bit.INTEN = 1;
-                    EPwm3Regs.ETSEL.bit.INTEN = 1;
+                    EPwm1Regs.CMPA.half.CMPA = 0;
+                    EPwm3Regs.CMPA.half.CMPA = duty_cycle;
+//                    state_change = 1;
+//                    EPwm1Regs.ETSEL.bit.INTEN = 1;
+//                    EPwm3Regs.ETSEL.bit.INTEN = 1;
                 }
                 break;
 
@@ -189,7 +192,7 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     U_LOW_SIDE_ON();
-                    EPwm3Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm3Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
@@ -205,12 +208,12 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     U_LOW_SIDE_ON();
-                    EPwm2Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm2Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
-                    EPwm2Regs.ETSEL.bit.INTEN = 1;
-                    EPwm3Regs.ETSEL.bit.INTEN = 1;
+                    EPwm2Regs.CMPA.half.CMPA = duty_cycle;
+                    EPwm3Regs.CMPA.half.CMPA = 0;
                 }
                 break;
 
@@ -221,7 +224,7 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     W_LOW_SIDE_ON();
-                    EPwm2Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm2Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
@@ -237,12 +240,12 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     W_LOW_SIDE_ON();
-                    EPwm1Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm1Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
-                    EPwm1Regs.ETSEL.bit.INTEN = 1;
-                    EPwm2Regs.ETSEL.bit.INTEN = 1;
+                    EPwm1Regs.CMPA.half.CMPA = duty_cycle;
+                    EPwm2Regs.CMPA.half.CMPA = 0;
                 }
                 break;
 
@@ -253,7 +256,7 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 if (startup)
                 {
                     V_LOW_SIDE_ON();
-                    EPwm1Regs.CMPA.half.CMPA = DUTY_CYCLE;
+                    EPwm1Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else
                 {
@@ -281,44 +284,32 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
 
 __interrupt void epwm1_isr(void)
 {
-    if (0 == EPwm1Regs.CMPA.half.CMPA)
-    {
-        EPwm1Regs.CMPA.half.CMPA = DUTY_CYCLE;
-    }
-    else if (DUTY_CYCLE == EPwm1Regs.CMPA.half.CMPA)
-    {
-        EPwm1Regs.CMPA.half.CMPA = 0;
-    }
     EPwm1Regs.ETSEL.bit.INTEN = 0;
     EPwm1Regs.ETCLR.bit.INT = 1;
+    if (EPwm1Regs.CMPA.half.CMPA != 0 && EPwm1Regs.CMPA.half.CMPA != duty_cycle)
+    {
+        EPwm1Regs.CMPA.half.CMPA = duty_cycle;
+    }
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 }
 __interrupt void epwm2_isr(void)
 {
-    if (0 == EPwm2Regs.CMPA.half.CMPA)
-    {
-        EPwm2Regs.CMPA.half.CMPA = DUTY_CYCLE;
-    }
-    else if (DUTY_CYCLE == EPwm2Regs.CMPA.half.CMPA)
-    {
-        EPwm2Regs.CMPA.half.CMPA = 0;
-    }
     EPwm2Regs.ETSEL.bit.INTEN = 0;
     EPwm2Regs.ETCLR.bit.INT = 1;
+    if (EPwm2Regs.CMPA.half.CMPA != 0 && EPwm2Regs.CMPA.half.CMPA != duty_cycle)
+    {
+        EPwm2Regs.CMPA.half.CMPA = duty_cycle;
+    }
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 }
 __interrupt void epwm3_isr(void)
 {
-    if (0 == EPwm3Regs.CMPA.half.CMPA)
-    {
-        EPwm3Regs.CMPA.half.CMPA = DUTY_CYCLE;
-    }
-    else if (DUTY_CYCLE == EPwm3Regs.CMPA.half.CMPA)
-    {
-        EPwm3Regs.CMPA.half.CMPA = 0;
-    }
     EPwm3Regs.ETSEL.bit.INTEN = 0;
     EPwm3Regs.ETCLR.bit.INT = 1;
+    if (EPwm3Regs.CMPA.half.CMPA != 0 && EPwm3Regs.CMPA.half.CMPA != duty_cycle)
+    {
+        EPwm3Regs.CMPA.half.CMPA = duty_cycle;
+    }
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 }
 

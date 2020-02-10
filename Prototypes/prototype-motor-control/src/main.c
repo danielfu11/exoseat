@@ -5,8 +5,20 @@
 #include "inc/commutation.h"
 #include "inc/drv8305_config.h"
 #include "inc/timer.h"
+#include "inc/speed_control.h"
+
+#define ONE_REV     12
 
 extern volatile bool new_hall_state;
+extern volatile Uint32 ticks_moved;
+
+DCL_PID pid_controller = PID_DEFAULTS;  //initialize before interrupts turn on
+float reference;                        // controller set-point reference (rk)
+float feedback;                         // measured feedback value (yk)
+float saturation;                       // external output clamp flag (lk)
+float control_output;                   // output of controller block (uk)
+
+volatile Uint8 blah = 0;
 
 void main(void)
 {
@@ -43,6 +55,9 @@ void main(void)
     // Initialize DRV8305
     drv8305_init();
 
+    //Initialize PID speed controller
+    controller_init();
+
     // Enable global interrupts
     EINT;
 
@@ -56,15 +71,24 @@ void main(void)
     // Commutate
     phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
 
+    float speed_arr[20];
+
+    int i = 0;
+
     while (1)
     {
         if (fault_cleared())
         {
             if (new_hall_state)
             {
+                feedback = (float) calculate_speed();
+                speed_arr[i] = feedback;
                 hall_state = read_hall_states();
                 drive_state = next_commutation_state(CW, hall_state, false);
                 new_hall_state = false;
+                i++;
+                if (i == 20) i = 0;
+                if (i == 2) blah = 1;
             }
         }
         else

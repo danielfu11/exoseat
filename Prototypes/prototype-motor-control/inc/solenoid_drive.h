@@ -9,6 +9,7 @@
 #define INC_SOLENOID_DRIVE_H_
 
 #include "DSP28x_Project.h"
+#include "inc/timer.h"
 
 void solenoid_init(void);
 

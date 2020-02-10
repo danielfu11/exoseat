@@ -6,9 +6,7 @@
  */
 
 #include "inc/solenoid_drive.h"
-#include "inc/timer.h"
 
-extern volatile bool delay_done;
 
 void solenoid_init(void)
 {
@@ -24,26 +22,24 @@ void pawl_release(void)
 {
     GpioDataRegs.GPASET.bit.GPIO21 = 1;
 
-    CpuTimer0.RegsAddr->PRD.all = (45 * 90 * 1000) - 1;
+    CpuTimer0.InterruptCount = 0;
     // Start/Restart timer (TSS bit)
     CpuTimer0Regs.TCR.all = 0x4000;
     CpuTimer0.RegsAddr->TCR.bit.TIE = 1;
-    while (!delay_done);
+    while (CpuTimer0.InterruptCount < 45);
 
     GpioDataRegs.GPACLEAR.bit.GPIO21 = 1;
-    delay_done = false;
 }
 
 void pawl_down(void)
 {
     GpioDataRegs.GPASET.bit.GPIO23 = 1;
 
-    CpuTimer0.RegsAddr->PRD.all = (40 * 90 * 1000) - 1;
+    CpuTimer0.InterruptCount = 0;
     // Start/Restart timer (TSS bit)
     CpuTimer0Regs.TCR.all = 0x4000;
     CpuTimer0.RegsAddr->TCR.bit.TIE = 1;
-    while (!delay_done);
+    while (CpuTimer0.InterruptCount < 40);
 
     GpioDataRegs.GPACLEAR.bit.GPIO23 = 1;
-    delay_done = false;
 }
