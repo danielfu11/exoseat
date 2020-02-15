@@ -6,6 +6,7 @@
 #include "inc/drv8305_config.h"
 #include "inc/timer.h"
 #include "inc/speed_control.h"
+#include "inc/spi.h"
 
 #define ONE_REV     12
 
@@ -43,6 +44,9 @@ void main(void)
     // is not used in this example.  This is useful for debug purposes.
     InitPieVectTable();
 
+    //Initialize SPI-A GPIO pins
+    InitSpiaGpio();
+
     // Initialize timer
     timer_init();
 
@@ -65,11 +69,17 @@ void main(void)
     enable_drv8305();
     delay_1ms();
 
+    // Initialize SPI peripheral
+    spi_init();
+
     // Read initial hall sensor states
     Uint8 hall_state = read_hall_states();
 
     // Commutate
     phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
+
+
+    send_spi_control_word(SPI_READ, 0x5, 0);
 
     float speed_arr[20];
 
@@ -88,7 +98,7 @@ void main(void)
                 new_hall_state = false;
                 i++;
                 if (i == 20) i = 0;
-                if (i == 2) blah = 1;
+                //if (i == 2) blah = 1;
             }
         }
         else

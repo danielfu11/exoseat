@@ -32,9 +32,9 @@ void hallsensor_init(void)
     EALLOW;
 
     // Enable pull up
-    GpioCtrlRegs.GPAPUD.bit.GPIO6 = 0;
-    GpioCtrlRegs.GPAPUD.bit.GPIO7 = 0;
-    GpioCtrlRegs.GPAPUD.bit.GPIO8 = 0;
+    GpioCtrlRegs.GPAPUD.bit.GPIO6 = 1;
+    GpioCtrlRegs.GPAPUD.bit.GPIO7 = 1;
+    GpioCtrlRegs.GPAPUD.bit.GPIO8 = 1;
 
     // Input sync'd to SYSCLKOUT
     GpioCtrlRegs.GPAQSEL1.bit.GPIO6 = 0;
