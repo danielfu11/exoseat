@@ -13,6 +13,8 @@ volatile Uint32 ticks_moved = 0; // 1 tick == 30 deg
 static volatile Uint32 hall_tmr_prev = 0;
 static volatile Uint32 hall_tmr_cur = 0;
 
+extern volatile Uint8 wrap_around;
+
 // ISR prototypes
 __interrupt void xint1_isr(void);
 __interrupt void xint2_isr(void);
@@ -94,7 +96,16 @@ Uint8 read_hall_states(void)
 
 Uint32 calculate_speed(void)
 {
-    Uint32 tick_time = hall_tmr_cur - hall_tmr_prev; // 1 uS per tick
+    Uint32 tick_time;
+    if (wrap_around)
+    {
+        tick_time = hall_tmr_cur + wrap_around * 0xFFFF - hall_tmr_prev;
+        wrap_around = 0;
+    }
+    else
+    {
+        tick_time = hall_tmr_cur - hall_tmr_prev; // 1 uS per tick
+    }
     return (Uint32) (5000000 / tick_time); // 1000000 * 60 / (tick_time * 12) = RPM
 
 }
