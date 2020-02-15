@@ -14,7 +14,9 @@ extern float feedback;                         // measured feedback value (yk)
 extern float saturation;                       // external output clamp flag (lk)
 extern float control_output;                   // output of controller block (uk)
 extern volatile Uint8 blah;
+
 volatile bool delay_done = false;
+volatile Uint8 wrap_around = 0;
 
 __interrupt void cpu_timer0_isr(void);
 __interrupt void cpu_timer1_isr(void);
@@ -111,8 +113,9 @@ __interrupt void cpu_timer1_isr(void)
 {
     CpuTimer1Regs.TCR.bit.TIF = 1;
     CpuTimer1.InterruptCount++;
-    if (CpuTimer1.InterruptCount == 0xFFFFFFFF)
+    if (CpuTimer1.InterruptCount == 0xFFFF)
     {
+        wrap_around++;
         CpuTimer1.InterruptCount = 0;
     }
 }
