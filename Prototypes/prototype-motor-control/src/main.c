@@ -98,7 +98,7 @@ void main(void)
                 new_hall_state = false;
                 i++;
                 if (i == 20) i = 0;
-                //if (i == 2) blah = 1;
+                if (i == 2) blah = 1;
             }
         }
         else

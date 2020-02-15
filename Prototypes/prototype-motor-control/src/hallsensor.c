@@ -96,7 +96,6 @@ Uint32 calculate_speed(void)
 {
     Uint32 tick_time = hall_tmr_cur - hall_tmr_prev; // 1 uS per tick
     return (Uint32) (5000000 / tick_time); // 1000000 * 60 / (tick_time * 12) = RPM
-
 }
 
 __interrupt void xint1_isr(void)
