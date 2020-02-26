@@ -16,6 +16,6 @@ void hallsensor_init(void);
 
 Uint8 read_hall_states(void);
 
-Uint32 calculate_speed(void);
+float calculate_speed(void);
 
 #endif /* INC_HALLSENSOR_H_ */

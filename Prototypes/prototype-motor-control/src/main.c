@@ -10,6 +10,8 @@
 
 #define ONE_REV     12
 
+//stalled at 6V and 2.8A - how to you set current limit
+
 extern volatile bool new_hall_state;
 extern volatile Uint32 ticks_moved;
 
@@ -20,6 +22,7 @@ float saturation;                       // external output clamp flag (lk)
 float control_output;                   // output of controller block (uk)
 
 volatile Uint8 blah = 0;
+extern Uint32 tick_time;
 
 void main(void)
 {
@@ -82,6 +85,7 @@ void main(void)
     send_spi_control_word(SPI_READ, 0x5, 0);
 
     float speed_arr[20];
+    Uint32 time_arr[20];
 
     int i = 0;
 
@@ -91,8 +95,9 @@ void main(void)
         {
             if (new_hall_state)
             {
-                feedback = (float) calculate_speed();
+                feedback = calculate_speed();
                 speed_arr[i] = feedback;
+                time_arr[i] = tick_time;
                 hall_state = read_hall_states();
                 drive_state = next_commutation_state(CW, hall_state, false);
                 new_hall_state = false;

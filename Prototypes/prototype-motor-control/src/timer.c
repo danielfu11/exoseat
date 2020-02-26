@@ -131,7 +131,8 @@ __interrupt void cpu_timer2_isr(void)
 
         control_output = DCL_runPID_C4(&pid_controller, reference, feedback, saturation);
 
-        duty_cycle = (Uint32) (((reference + control_output) / 3300) * 2000 );
+        //duty_cycle = (Uint32) (((reference + control_output) / 3300) * 2000 );
+        duty_cycle = (Uint32) ((control_output - pid_controller.Umin)/3.3); // 0 <= (control_output - pid_controller.Umin)/3.3) <= 6600/3.3 = 2000 = max duty cycle
 
         EPwm1Regs.ETSEL.bit.INTEN = 1;
         EPwm2Regs.ETSEL.bit.INTEN = 1;

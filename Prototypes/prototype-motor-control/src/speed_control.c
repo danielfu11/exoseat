@@ -29,9 +29,9 @@ void controller_init(void)
     pid_controller.i10 = 0.0f; // integral path intermed storage
     pid_controller.i14 = 1.0f; // saturation intermed storage
     pid_controller.Umax = 3300.0f; // upper OUTPUT clamp limit
-    pid_controller.Umin = -3300.0f; // lower OUTPUT clamp limit
+    pid_controller.Umin = -3300.0f; //-200.0f; // lower OUTPUT clamp limit
 
-    reference = 330.0f; // initial value for control reference -- start with the motor off
+    reference = INITIAL_REFERENCE_SPEED; // initial value for control reference -- start with the motor off
     saturation = 1.0f; // control loop not saturated
 }
 

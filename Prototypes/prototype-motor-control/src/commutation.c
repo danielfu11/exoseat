@@ -6,11 +6,13 @@
  */
 
 #include "inc/commutation.h"
+#include "inc/speed_control.h"
+
 
 #define INDEPENDENT_PWM    1
 #define COMPLEMENTARY_PWM  0
 
-volatile Uint32 duty_cycle = 200;
+volatile Uint32 duty_cycle = INITIAL_REFERENCE_SPEED;
 
 __interrupt void epwm1_isr(void);
 __interrupt void epwm2_isr(void);
