@@ -11,7 +11,7 @@
 #include "DCL.h"
 #include "DCLF32.h" //32 bit floating point implementation
 
-#define INITIAL_REFERENCE_SPEED 75.0f //rpm of motor shaft before gears
+#define INITIAL_REFERENCE_SPEED 75U //rpm of motor shaft before gears
 
 
 void controller_init(void);

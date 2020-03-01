@@ -123,8 +123,8 @@ __interrupt void cpu_timer1_isr(void)
 __interrupt void cpu_timer2_isr(void)
 {
     CpuTimer2Regs.TCR.bit.TIF = 1;
-    if (blah)
-    {
+//    if (blah)
+//    {
         saturation = feedback;
 
         DCL_runClamp_C1(&saturation, 3300.0f, -3300.0f); //converts saturation to 1 or 0
@@ -137,6 +137,6 @@ __interrupt void cpu_timer2_isr(void)
         EPwm1Regs.ETSEL.bit.INTEN = 1;
         EPwm2Regs.ETSEL.bit.INTEN = 1;
         EPwm3Regs.ETSEL.bit.INTEN = 1;
-    }
+//    }
 }
 

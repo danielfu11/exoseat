@@ -13,6 +13,8 @@
 #define COMPLEMENTARY_PWM  0
 
 volatile Uint32 duty_cycle = INITIAL_REFERENCE_SPEED;
+extern volatile bool new_hall_state;
+Uint8 hall_state;
 
 __interrupt void epwm1_isr(void);
 __interrupt void epwm2_isr(void);
@@ -156,6 +158,41 @@ void gate_drive_init(void)
     PieCtrlRegs.PIEIER3.bit.INTx3 = 1;
 
     IER |= M_INT3;
+}
+
+void motor_off(void)
+{
+    U_LOW_SIDE_OFF();
+    V_LOW_SIDE_OFF();
+    W_LOW_SIDE_OFF();
+    EPwm1Regs.CMPA.half.CMPA = 0;
+    EPwm2Regs.CMPA.half.CMPA = 0;
+    EPwm3Regs.CMPA.half.CMPA = 0;
+    CpuTimer2.RegsAddr->TCR.bit.TIE = 0;
+}
+
+void motor_on(void)
+{
+    // Read initial hall sensor states
+    hall_state = read_hall_states();
+
+    // Commutate
+    phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
+
+    int cnt = 0;
+    while (cnt < 2)
+    {
+        if (new_hall_state)
+        {
+            feedback = calculate_speed();
+            hall_state = read_hall_states();
+            drive_state = next_commutation_state(CW, hall_state, false);
+            new_hall_state = false;
+            cnt++;
+        }
+    }
+
+    CpuTimer2.RegsAddr->TCR.bit.TIE = 1;
 }
 
 phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool startup)
