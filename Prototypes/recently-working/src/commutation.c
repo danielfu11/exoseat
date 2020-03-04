@@ -472,7 +472,7 @@ phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool sta
                 drive_state.phase_w = NC;
                 if (startup)
                 {
-                    W_LOW_SIDE_ON();
+                    V_LOW_SIDE_ON();
                     EPwm1Regs.CMPA.half.CMPA = duty_cycle;
                 }
                 else

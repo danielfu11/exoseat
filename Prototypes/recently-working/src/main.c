@@ -89,7 +89,7 @@ void main(void)
     Uint8 hall_state = read_hall_states();
 
     // Commutate
-    phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
+    phase_drive_s drive_state = next_commutation_state(CCW, hall_state, true);
 
 
    // send_spi_control_word(SPI_READ, 0x5, 0);
@@ -106,7 +106,7 @@ void main(void)
                 feedback = (float) calculate_speed();
                 speed_arr[i] = feedback;
                 hall_state = read_hall_states();
-                drive_state = next_commutation_state(CW, hall_state, false);
+                drive_state = next_commutation_state(CCW, hall_state, false);
                 new_hall_state = false;
                 i++;
                 //if (i == 12) i = 0;
