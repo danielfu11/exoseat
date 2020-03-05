@@ -5,26 +5,10 @@
  *      Author: sonya
  */
 
+#include "inc/state_machine.h"
+
 state_e state;
 extern Uint8 hall_state;
-
-typedef enum
-{
-    NO_COMMAND,
-    STOP,
-    BRING_ME_DOWN,
-    PULL_ME_UP,
-    PSENSE,
-    ENC,
-} commands_e;
-
-typedef enum
-{
-    IDLE,
-    MOVING_UP,
-    LOCKED_MIDWAY,
-    LOCKED_UPRIGHT,
-} state_e;
 
 void state_machine(commands_e command)
 {
