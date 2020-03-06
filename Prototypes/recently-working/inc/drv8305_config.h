@@ -8,7 +8,6 @@
 #ifndef INC_DRV8305_CONFIG_H_
 #define INC_DRV8305_CONFIG_H_
 
-#include "DSP28x_Project.h"
 #include <stdbool.h>
 
 void drv8305_init(void);

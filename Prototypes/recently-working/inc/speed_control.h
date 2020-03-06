@@ -15,6 +15,4 @@ void controller_init(void);
 
 void update_reference(float32_t new_ref);
 
-
-
 #endif /* SPEED_CONTROL_H_ */

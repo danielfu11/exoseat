@@ -5,6 +5,7 @@
  *      Author: gufu
  */
 
+#include "DSP28x_Project.h"
 #include "inc/drv8305_config.h"
 
 void drv8305_init(void)

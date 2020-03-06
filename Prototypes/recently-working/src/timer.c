@@ -4,7 +4,11 @@
  *  Created on: Feb 4, 2020
  *      Author: gufu
  */
+#include <stdbool.h>
 
+#include "DSP28x_Project.h"
+#include "inc/commutation.h"
+#include "inc/speed_control.h"
 #include "inc/timer.h"
 
 extern volatile Uint32 duty_cycle;
@@ -76,7 +80,7 @@ void timer_init(void)
     // 0 = Disable/ 1 = Enable Timer Interrupt
     CpuTimer0.RegsAddr->TCR.bit.TIE = 0;
     CpuTimer1.RegsAddr->TCR.bit.TIE = 1;
-    CpuTimer2.RegsAddr->TCR.bit.TIE = 1;
+    CpuTimer2.RegsAddr->TCR.bit.TIE = 0; // Disabled initially, timer2 used for controls
 
     // Reset interrupt counter
     CpuTimer0.InterruptCount = 0;
@@ -97,6 +101,7 @@ void delay_1ms(void)
     CpuTimer0.InterruptCount = 0;
     CpuTimer0.RegsAddr->TCR.bit.TIE = 1;
     while (!delay_done);
+    CpuTimer0.RegsAddr->TCR.bit.TIE = 0;
     delay_done = false;
 }
 
@@ -105,7 +110,6 @@ __interrupt void cpu_timer0_isr(void)
     CpuTimer0Regs.TCR.bit.TIF = 1;
     delay_done = true;
     CpuTimer0.InterruptCount++;
-    CpuTimer0.RegsAddr->TCR.bit.TIE = 0;
     PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
 }
 
@@ -123,20 +127,18 @@ __interrupt void cpu_timer1_isr(void)
 __interrupt void cpu_timer2_isr(void)
 {
     CpuTimer2Regs.TCR.bit.TIF = 1;
-    if (blah)
-    {
-        saturation = feedback;
-        DCL_runClamp_C1(&saturation, pid_controller.Umax, pid_controller.Umin); //converts saturation to 1 or 0
 
-        control_output = DCL_runPID_C4(&pid_controller, reference, feedback, saturation);
+    saturation = feedback;
+    DCL_runClamp_C1(&saturation, pid_controller.Umax, pid_controller.Umin); //converts saturation to 1 or 0
 
-        duty_cycle = (Uint32) (((reference + control_output) / 3300) * 2000 );
-        //duty_cycle = (Uint32) ((control_output + 3300.0)/3.3); // 0 <= (control_output - pid_controller.Umin)/3.3) <= 6600/3.3 = 2000 = max duty cycle
+    control_output = DCL_runPID_C4(&pid_controller, reference, feedback, saturation);
+
+    duty_cycle = (Uint32) (((reference + control_output) / 3300) * 2000 );
+    //duty_cycle = (Uint32) ((control_output + 3300.0)/3.3); // 0 <= (control_output - pid_controller.Umin)/3.3) <= 6600/3.3 = 2000 = max duty cycle
 
 
-        EPwm1Regs.ETSEL.bit.INTEN = 1;
-        EPwm2Regs.ETSEL.bit.INTEN = 1;
-        EPwm3Regs.ETSEL.bit.INTEN = 1;
-    }
+    EPwm1Regs.ETSEL.bit.INTEN = 1;
+    EPwm2Regs.ETSEL.bit.INTEN = 1;
+    EPwm3Regs.ETSEL.bit.INTEN = 1;
 }
 
