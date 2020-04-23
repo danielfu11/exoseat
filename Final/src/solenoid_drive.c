@@ -5,8 +5,9 @@
  *      Author: gufu
  */
 
+#include "DSP28x_Project.h"
+#include "inc/timer.h"
 #include "inc/solenoid_drive.h"
-
 
 void solenoid_init(void)
 {
@@ -40,6 +41,6 @@ void pawl_down(void)
     CpuTimer0Regs.TCR.all = 0x4000;
     CpuTimer0.RegsAddr->TCR.bit.TIE = 1;
     while (CpuTimer0.InterruptCount < 40);
-
+    CpuTimer0.RegsAddr->TCR.bit.TIE = 0;
     GpioDataRegs.GPACLEAR.bit.GPIO23 = 1;
 }

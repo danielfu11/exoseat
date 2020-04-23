@@ -1,3 +1,9 @@
+/*
+ * main.c
+ *
+ *  Created on: Feb 1, 2020
+ *      Author: gufu
+ */
 
 #include "DSP28x_Project.h"
 
@@ -7,11 +13,14 @@
 #include "inc/timer.h"
 #include "inc/speed_control.h"
 #include "inc/spi.h"
-
-#define ONE_REV     12
+#include "inc/debug.h"
+#include "inc/state_machine.h"
+#include "inc/command_queue.h"
+#include "inc/user_control.h"
+#include "inc/prox_sense.h"
 
 extern volatile bool new_hall_state;
-extern volatile Uint32 ticks_moved;
+extern volatile bool is_hall_prox_on_latch;
 
 DCL_PID pid_controller = PID_DEFAULTS;  //initialize before interrupts turn on
 float reference;                        // controller set-point reference (rk)
@@ -19,7 +28,24 @@ float feedback;                         // measured feedback value (yk)
 float saturation;                       // external output clamp flag (lk)
 float control_output;                   // output of controller block (uk)
 
-volatile Uint8 blah = 0;
+command_queue_t command_q =
+{
+ .head = 0,
+ .tail = 0,
+ .size = 0,
+};
+
+drv8305_fault_regs_t fault_regs =
+{
+ .ic_faults = 0,
+ .ov_vds_faults = 0,
+ .vgs_faults = 0,
+ .warnings = 0,
+};
+
+direction_e direction;
+
+#define DISABLE_STATE_MACHINE
 
 void main(void)
 {
@@ -44,9 +70,6 @@ void main(void)
     // is not used in this example.  This is useful for debug purposes.
     InitPieVectTable();
 
-    //Initialize SPI-A GPIO pins
-    InitSpiaGpio();
-
     // Initialize timer
     timer_init();
 
@@ -62,44 +85,78 @@ void main(void)
     //Initialize PID speed controller
     controller_init();
 
+    // Initialize UART
+    usr_ctrl_comm_init();
+
+    // Initialize hall sensor GPIO pins
+    hall_prox_sense_init();
+
+    // Initialize SPI peripheral
+    spi_init();
+
     // Enable global interrupts
     EINT;
 
     // Enable DRV8305 if nFault
     enable_drv8305();
     delay_1ms();
+    // TODO: Disable drv8305 during IDLE state?
 
-    // Initialize SPI peripheral
-    spi_init();
+    direction = CCW; //CCW = wrap up
 
+#ifdef DISABLE_STATE_MACHINE
     // Read initial hall sensor states
     Uint8 hall_state = read_hall_states();
 
     // Commutate
-    phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
+    phase_drive_s drive_state = next_commutation_state(direction, hall_state, true);
+#endif
 
+    int hall_cntr = 0; //for debugging
 
-    send_spi_control_word(SPI_READ, 0x5, 0);
+    commands_e received_command = NO_COMMAND;
 
-    float speed_arr[20];
-
-    int i = 0;
+#ifdef DISABLE_STATE_MACHINE
+    int i;
+#endif
 
     while (1)
     {
+
+        if(!read_drv8305_fault_regs(&fault_regs))
+        {
+            //while(1); //stop to check fault (only keep for debugging)
+        }
+
+
+        if(is_hall_prox_on_latch)
+        {
+            hall_cntr++;
+           // is_hall_prox_on_latch = false;
+        }
+
         if (fault_cleared())
         {
+#ifndef DISABLE_STATE_MACHINE
+            // If new command
+            if (!queue_pop(&command_q, &received_command))
+            {
+                //__asm("     ESTOP0");
+            }
+            state_machine(received_command);
+#else
             if (new_hall_state)
             {
                 feedback = (float) calculate_speed();
-                speed_arr[i] = feedback;
+                //speed_arr[i] = feedback;
                 hall_state = read_hall_states();
-                drive_state = next_commutation_state(CW, hall_state, false);
+                drive_state = next_commutation_state(direction, hall_state, false);
                 new_hall_state = false;
                 i++;
-                if (i == 20) i = 0;
+                if (i == 12) i = 0;
                 //if (i == 2) blah = 1;
             }
+#endif
         }
         else
         {
