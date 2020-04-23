@@ -8,7 +8,6 @@
 #ifndef INC_COMMUTATION_H_
 #define INC_COMMUTATION_H_
 
-#include "DSP28x_Project.h"
 #include <stdbool.h>
 
 typedef enum
@@ -32,6 +31,10 @@ typedef struct
 } phase_drive_s;
 
 void gate_drive_init(void);
+
+void motor_off(void);
+
+void motor_on(direction_e dir);
 
 phase_drive_s next_commutation_state(direction_e dir, Uint8 hall_state, bool startup);
 
