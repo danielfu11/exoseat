@@ -1,0 +1,51 @@
+Version Number: 
+	V3
+New Features: 
+	-- state machine integrated and working with remote control
+	-- spi driver communication fixed and reliable
+	-- proximity hall sensor integration to state machine
+Known Defects:
+	-- power-on calibration routine not yet implmented 
+Commit #: 
+	0151ae08
+Third Party Support Libraries: 
+	-- C2000Ware Motor Control SDK: http://www.ti.com/tool/2000WARE-MOTORCONTROL-SDK
+	-- Digital Control Library: http://www.ti.com/tool/C2000-DIGITAL-CONTROL-LIBRARY
+Instructions for use:
+	-- copy source and header files and paste into existing CCS project
+
+---------------------------------------------------------------------
+
+Version Number: 
+	V2
+New Features: 
+	-- spi driver for communication with motor driver 
+	-- added motor drive in both directions (CW and CCW)\
+	-- fixed control output conversion to PWM
+Known Defects:
+	-- spi driver - errors in reading from motor driver
+Commit #: 
+	45ab2607
+Third Party Support Libraries: 
+	-- C2000Ware Motor Control SDK: http://www.ti.com/tool/2000WARE-MOTORCONTROL-SDK
+	-- Digital Control Library: http://www.ti.com/tool/C2000-DIGITAL-CONTROL-LIBRARY
+Instructions for use:
+	-- copy source and header files and paste into existing CCS project
+
+----------------------------------------------------------------------
+
+Version Number: 
+	V1
+New Features: 
+	-- motor drive and commutation functinality
+	-- speed controller code (not yet refined)
+	-- solenoid drive code
+Known Defects:
+	-- speed control conversion to PWM not correct
+Commit #: 
+	50245c40
+Third Party Support Libraries: 
+	-- C2000Ware Motor Control SDK: http://www.ti.com/tool/2000WARE-MOTORCONTROL-SDK
+	-- Digital Control Library: http://www.ti.com/tool/C2000-DIGITAL-CONTROL-LIBRARY
+Instructions for use:
+	-- run in Code Composer Studio

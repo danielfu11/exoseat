@@ -1,0 +1,3 @@
+Third Party Tools:
+	-- C2000Ware Motor Control SDK: http://www.ti.com/tool/2000WARE-MOTORCONTROL-SDK
+	-- Digital Control Library: http://www.ti.com/tool/C2000-DIGITAL-CONTROL-LIBRARY
