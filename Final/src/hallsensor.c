@@ -5,10 +5,16 @@
  *      Author: gufu
  */
 
+#include "DSP28x_Project.h"
+#include <stdbool.h>
 #include "inc/hallsensor.h"
+#include "inc/timer.h"
+#include "inc/state_machine.h"
 
 volatile bool new_hall_state = false;
-volatile Uint32 ticks_moved = 0; // 1 tick == 30 deg
+//volatile Uint32 distance_moved = 0; // 1 tick == 30 deg
+
+extern position_tracker_t position;
 
 static volatile Uint32 hall_tmr_prev = 0;
 static volatile Uint32 hall_tmr_cur = 0;
@@ -23,7 +29,7 @@ __interrupt void xint3_isr(void);
 static void xint_unified_isr(void)
 {
     new_hall_state = true;
-    ticks_moved++;
+    position.distance_moved++;
     hall_tmr_prev = hall_tmr_cur;
     hall_tmr_cur = CpuTimer1.InterruptCount;
 }
@@ -106,7 +112,7 @@ Uint32 calculate_speed(void)
     {
         tick_time = hall_tmr_cur - hall_tmr_prev; // 1 uS per tick
     }
-    return (Uint32) (5000000 / tick_time); // 1000000 * 60 / (tick_time * 12) = RPM
+    return (Uint32) (50000 / tick_time); // 1000000 * 60 / (tick_time * 12) = RPM
 
 }
 
