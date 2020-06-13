@@ -129,11 +129,11 @@ void main(void)
     delay_1ms();
     // TODO: Disable drv8305 during IDLE state?
 
-    direction = CCW; //CCW = wrap up
+    direction = CCW; //CW = wrap up
 
     if(!write_drv8305_reg(SPI_REG_ADDR_IC_OPERATION, 0x0620)) //disable PVDD_UVLO2 fault, enable OTSD (overtemp shutdown)
     {
-        while(1);
+        //while(1); //for debug
     }
 
 #ifdef DISABLE_STATE_MACHINE

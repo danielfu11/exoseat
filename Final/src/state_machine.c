@@ -14,8 +14,16 @@
 
 #define ONE_REV                   12
 #define DISTANCE_REQUIRED         2*40*ONE_REV // Should be one full revolution on outer shaft
+#define END_DIST                  40*ONE_REV //Distance from magnets to hardstop (currently 1/4 of total distance but TODO: change to actual distance when it is measured)
+#define START_CAL_DIST            END_DIST + 10*ONE_REV//END_DIST + a little more
+#define MAX_STARTUP_UP_DIST       100000 //TODO: set this to resonable value base on calculated rope length (total length of rope totally wound out to magnet location aka length between magnet and IDLE location + END_DIST)
 
+#ifdef DISABLE_STARTUP_CALIBRATION
 state_e state = IDLE;
+#else
+state_e state = STARTUP;
+#endif
+
 //Uint32 desired_distance = DISTANCE_REQUIRED;
 extern Uint8 hall_state;
 extern float feedback;
@@ -71,12 +79,79 @@ static void transition_to_moving_down(void)
     state = MOVING_DOWN;
 }
 
+inline static void startup_move_down(void){
+//    pawl_release();
+    position.distance_moved = 0;
+    position.direction = DIRECTION_DOWN;
+    motor_on(CCW);
+    state = STARTUP_DOWN;
+}
+
+inline static void startup_move_up(void)
+{
+//    pawl_down();
+    position.direction = DIRECTION_UP;
+    position.distance_moved = 0;
+    motor_on(CW);
+    state = STARTUP_UP;
+}
+
 // Public functions
 void state_machine(commands_e command)
 {
     phase_drive_s drive_state;
     switch(state)
     {
+        case STARTUP:
+            startup_move_down(); //the down and up functions are the problem
+            break;
+
+        case STARTUP_DOWN:
+            if(position.distance_moved == START_CAL_DIST)
+            {
+                motor_off();
+                DELAY_US(1000000);
+                startup_move_up();
+            }
+            else if (is_hall_prox_on_latch == true)
+            {
+                transition_to_locked_upright();
+                is_hall_prox_on_latch = false;
+            }
+            else
+            {
+                if (new_hall_state)
+                {
+                    feedback = calculate_speed();
+                    hall_state = read_hall_states();
+                    drive_state = next_commutation_state(CCW, hall_state, false);
+                    new_hall_state = false;
+                }
+            }
+            break;
+
+        case STARTUP_UP:
+            if (is_hall_prox_on_latch == true)
+            {
+                transition_to_locked_upright();
+                is_hall_prox_on_latch = false;
+            }
+            else if (position.distance_moved >= MAX_STARTUP_UP_DIST) //last resort safety check if prox sensor is not working (so that motor doesn't keep wrapping up forever)
+            {
+                motor_off();
+            }
+            else
+            {
+                if (new_hall_state)
+                {
+                    feedback = calculate_speed();
+                    hall_state = read_hall_states();
+                    drive_state = next_commutation_state(CW, hall_state, false);
+                    new_hall_state = false;
+                }
+            }
+                break;
+
         case IDLE:
             if(command == PULL_ME_UP)
             {
@@ -90,7 +165,7 @@ void state_machine(commands_e command)
             {
                 transition_to_locked_midway();
             }
-            else if((position.distance_moved == position.desired_distance) || (is_hall_prox_on_latch == true))
+            else if((position.distance_moved == position.desired_distance) || (is_hall_prox_on_latch == true)) //TODO: change to >= ?
             {
                 // if hall prox is activated before desire_dist is reached, reset full and desired distance to distance moved
                 // (prevents drifting of moved distance on rope)

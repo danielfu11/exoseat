@@ -142,7 +142,7 @@ __interrupt void cpu_timer2_isr(void)
     duty_cycle = (Uint32) (((reference + control_output) / 3300) * 2000 );
     //duty_cycle = (Uint32) ((control_output + 3300.0)/3.3); // 0 <= (control_output - pid_controller.Umin)/3.3) <= 6600/3.3 = 2000 = max duty cycle
 
-    if((state == MOVING_UP) && (is_hall_prox_on_latch == false))
+    if(((state == MOVING_UP) || (state == STARTUP_DOWN) || (state == STARTUP_UP)) && (is_hall_prox_on_latch == false))
     {
         // only poll sensor when in MOVING_UP state and if hall prox has not returned true yet
         // (once true, latch on that value and only clear it after transition to locked upright state)

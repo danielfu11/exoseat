@@ -12,7 +12,7 @@
 #define INDEPENDENT_PWM    1
 #define COMPLEMENTARY_PWM  0
 
-volatile Uint32 duty_cycle = 200;
+volatile Uint32 duty_cycle = 1;
 extern volatile bool new_hall_state;
 Uint8 hall_state;
 extern float feedback;

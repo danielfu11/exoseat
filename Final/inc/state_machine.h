@@ -10,6 +10,8 @@
 #ifndef INC_STATE_MACHINE_H_
 #define INC_STATE_MACHINE_H_
 
+//#define DISABLE_STARTUP_CALIBRATION
+
 typedef enum
 {
     NO_COMMAND = 0x00,
@@ -23,6 +25,9 @@ typedef enum
 
 typedef enum
 {
+    STARTUP,
+    STARTUP_DOWN,
+    STARTUP_UP,
     IDLE,
     MOVING_UP,
     LOCKED_MIDWAY,
