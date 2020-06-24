@@ -16,7 +16,7 @@ extern float saturation; // external output clamp flag (lk)
 
 void controller_init(void)
 {
-    update_reference(1000.0f); // initial value for control reference -- start with the motor off
+    update_reference(700.0f); // initial value for control reference -- start with the motor off
 
     //TODO: add SPS and CSS
     /* initialize controller variables (right now just unity controller) */

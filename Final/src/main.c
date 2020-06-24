@@ -129,12 +129,11 @@ void main(void)
     delay_1ms();
     // TODO: Disable drv8305 during IDLE state?
 
-    direction = CCW; //CW = wrap up
-
-    if(!write_drv8305_reg(SPI_REG_ADDR_IC_OPERATION, 0x0620)) //disable PVDD_UVLO2 fault, enable OTSD (overtemp shutdown)
-    {
-        //while(1); //for debug
+    if(!initialize_drv8305()){
+        while(1); //for debug if error
     }
+
+    direction = CW; //CW = wrap up
 
 #ifdef DISABLE_STATE_MACHINE
     // Read initial hall sensor states
@@ -173,6 +172,7 @@ void main(void)
             if (!queue_pop(&command_q, &received_command))
             {
                 //__asm("     ESTOP0");
+                received_command = NO_COMMAND; //if there is no new command
             }
             state_machine(received_command);
 #else

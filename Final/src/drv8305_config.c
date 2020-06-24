@@ -81,6 +81,25 @@ static inline void send_word_drv8305(Uint16 r_w, Uint16 addr, Uint16 data)
 }
 
 
+bool initialize_drv8305(void)
+{
+    bool status = true;
+    if(!write_drv8305_reg(SPI_REG_ADDR_IC_OPERATION, 0x0620, IC_OPERATION_RSVD_MASK)) //disable PVDD_UVLO2 fault, enable OTSD (overtemp shutdown)
+    {
+        status = false;
+    }
+    if(!write_drv8305_reg(SPI_REG_ADDR_SHUNT_AMP_CTRL, 0x00c0, SHUNT_AMP_CTRL_RSVD_MASK)) //current shunt blank time = 10us
+    {
+        status = false;
+    }
+    if(!write_drv8305_reg(SPI_REG_ADDR_VDS_SENSE_CTRL, 0x0000, VDS_SENSE_CTRL_RSVD_MASK)) //VDS_LEVEL = 0.060V (trip current = VDS_LEVEL/RDS_ON = 33A, RDS_ON = 1.8 mOhm)
+    {
+        status = false;
+    }
+
+    return status;
+}
+
 void spi_init(void)
 {
     InitSpiaGpio();
@@ -168,7 +187,7 @@ bool read_drv8305_fault_regs(drv8305_fault_regs_t * faults)
     return status;
 }
 
-void handle_drv8305_faults(drv8305_fault_regs_t * faults)
+void handle_drv8305_faults(drv8305_fault_regs_t * faults) //TODO: implement fault handiling (send special beep to speaker to indicate the restart is required if a fault occurs?)
 {
     bool status = true;
 
@@ -196,7 +215,7 @@ void handle_drv8305_faults(drv8305_fault_regs_t * faults)
     return status;
 }
 
-bool write_drv8305_reg(Uint16 address, Uint16 data)
+bool write_drv8305_reg(Uint16 address, Uint16 data, Uint16 rsvd_mask)
 {
     bool status = true;
     Uint16 read_check, read_check0; // variables for debugging
@@ -209,9 +228,10 @@ bool write_drv8305_reg(Uint16 address, Uint16 data)
     DELAY_US(100);
     read_check = read_drv8305_reg(address);
     read_check = read_drv8305_reg(address);
-    if(read_check != data) //check that data was written correctly
+    if((read_check & rsvd_mask) != (data & rsvd_mask)) //check that data was written correctly
     {
         status = false;
+
     }
 
 //    read_check1 = read_drv8305_reg(address);
@@ -230,7 +250,7 @@ void test_read_and_write(void) //purely for debugging (using breakpoints)
 {
     Uint16 drv8305_reg, drv8305_reg0, drv8305_reg1, drv8305_reg2, drv8305_reg3, drv8305_reg4, drv8305_reg5;
 
-    if(!write_drv8305_reg(SPI_REG_ADDR_HS_GATE_DRV_CTRL, 0x333))
+    if(!write_drv8305_reg(SPI_REG_ADDR_HS_GATE_DRV_CTRL, 0x333, HS_GATE_DRV_CTRL_RSVD_MASK))
     {
         //error
     }

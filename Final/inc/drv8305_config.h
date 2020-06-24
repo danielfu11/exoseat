@@ -31,6 +31,18 @@
 #define SPI_REG_ADDR_VOLT_REG_CTRL 0xB
 #define SPI_REG_ADDR_VDS_SENSE_CTRL 0xC
 
+#define WARN_WATCHDOG_RSVD_MASK 0x2FF//(0s are reserved spots)
+#define OV_VDS_FAULTS_RSVD_MASK 0x7D7
+#define IC_FAULTS_RSVD_MASK 0x777
+#define VGS_FAULTS_RSVD_MASK 0x7E0
+#define HS_GATE_DRV_CTRL_RSVD_MASK 0x3FF
+#define LS_GATE_DRV_CTRL_RSVD_MASK 0x3FF
+#define GATE_DRV_CTRL_RSVD_MASK 0x3FF
+#define IC_OPERATION_RSVD_MASK 0x7FF
+#define SHUNT_AMP_CTRL_RSVD_MASK 0x7FF
+#define VOLT_REG_CTRL_RSVD_MASK 0x31F
+#define VDS_SENSE_CTRL_RSVD_MASK 0x0FF
+
 typedef struct {
     // fault regs
     Uint16 warnings;
@@ -51,11 +63,12 @@ bool fault_cleared(void);
 
 //-----------------------------
 
+bool initialize_drv8305(void);
 void spi_init(void);
 Uint16 read_drv8305_reg(Uint16 address);
 bool read_drv8305_fault_regs(drv8305_fault_regs_t * faults);
 void handle_drv8305_faults(drv8305_fault_regs_t * faults);
-bool write_drv8305_reg(Uint16 address, Uint16 data);
+bool write_drv8305_reg(Uint16 address, Uint16 data, Uint16 rsvd_mask);
 
 void test_read_and_write(void);
 

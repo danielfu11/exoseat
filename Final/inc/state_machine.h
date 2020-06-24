@@ -33,6 +33,7 @@ typedef enum
     LOCKED_MIDWAY,
     LOCKED_UPRIGHT,
     MOVING_DOWN,
+    ERROR,
 } state_e;
 
 typedef enum
@@ -40,6 +41,14 @@ typedef enum
     DIRECTION_UP = CW,
     DIRECTION_DOWN = CCW
 } position_direction_e;
+
+typedef enum
+{
+    CORR_NONE,
+    CORR_LOCKED_UPRIGHT,
+    CORR_IDLE,
+    CORR_LOCKED_MIDWAY,
+} position_corr_type_e;
 
 typedef struct
 {
@@ -53,10 +62,16 @@ typedef struct
     // distance moved from IDLE or LOCKED_UPRIGHT
     volatile Uint32 distance_moved;
 
+    // distance moved from LOCKED_UPRIGHT
+    volatile Uint32 distance_from_upright;
+
     // if in MOVING_UP or MOVING_DOWN state, direction == DIRECTION_UP or DIRECTION_DOWN, respectively
     // if in LOCKED_MIDWAY, LOCKED_UPRIGHT, or IDLE state, direction == the last direction the system moved in
     //      (i.e. if prev state was MOVING_UP, direction == DURECTION_UP, etc)
     position_direction_e direction;
+
+    // defines whether currently in a position correction state (is_correction = true) or a normal operation state (is_correction = false)
+    position_corr_type_e correction_type;
 } position_tracker_t;
 
 void state_machine(commands_e command);

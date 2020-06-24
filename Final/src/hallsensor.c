@@ -30,6 +30,14 @@ static void xint_unified_isr(void)
 {
     new_hall_state = true;
     position.distance_moved++;
+    if(position.direction == DIRECTION_DOWN)
+    {
+        position.distance_from_upright++;
+    }
+    else if(position.direction == DIRECTION_UP)
+    {
+        position.distance_from_upright--;
+    }
     hall_tmr_prev = hall_tmr_cur;
     hall_tmr_cur = CpuTimer1.InterruptCount;
 }
