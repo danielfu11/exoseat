@@ -8,12 +8,11 @@
 #include "DSP28x_Project.h"
 #include "inc/commutation.h"
 #include "inc/hallsensor.h"
-#include "inc/drv8305_config.h"
 
 #define INDEPENDENT_PWM    1
 #define COMPLEMENTARY_PWM  0
 
-volatile Uint32 duty_cycle = 1; //this doesn't matter when speed control system is active
+volatile Uint32 duty_cycle = 75;
 extern volatile bool new_hall_state;
 Uint8 hall_state;
 extern float feedback;

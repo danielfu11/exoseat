@@ -9,12 +9,9 @@
 #include <stdbool.h>
 #include "inc/hallsensor.h"
 #include "inc/timer.h"
-#include "inc/state_machine.h"
 
 volatile bool new_hall_state = false;
-//volatile Uint32 distance_moved = 0; // 1 tick == 30 deg
-
-extern position_tracker_t position;
+volatile Uint32 distance_moved = 0; // 1 tick == 30 deg
 
 static volatile Uint32 hall_tmr_prev = 0;
 static volatile Uint32 hall_tmr_cur = 0;
@@ -29,15 +26,7 @@ __interrupt void xint3_isr(void);
 static void xint_unified_isr(void)
 {
     new_hall_state = true;
-    position.distance_moved++;
-    if(position.direction == DIRECTION_DOWN)
-    {
-        position.distance_from_upright++;
-    }
-    else if(position.direction == DIRECTION_UP)
-    {
-        position.distance_from_upright--;
-    }
+    distance_moved++;
     hall_tmr_prev = hall_tmr_cur;
     hall_tmr_cur = CpuTimer1.InterruptCount;
 }

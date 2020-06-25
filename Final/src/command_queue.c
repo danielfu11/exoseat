@@ -21,7 +21,7 @@ void queue_push(command_queue_t * p_queue, commands_e command)
     }
     else
     {
-        // Do nothing - don't accept new commands until the queue is no longer full
+        // Should we overwrite when the
     }
 }
 

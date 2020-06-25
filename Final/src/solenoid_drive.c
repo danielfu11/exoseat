@@ -16,7 +16,7 @@ void solenoid_init(void)
     GpioDataRegs.GPACLEAR.bit.GPIO21 = 1;
     GpioDataRegs.GPACLEAR.bit.GPIO23 = 1;
     GpioCtrlRegs.GPADIR.bit.GPIO21 = 1;
-    GpioCtrlRegs.GPADIR.bit.GPIO21 = 1;
+    GpioCtrlRegs.GPADIR.bit.GPIO23 = 1;
 }
 
 void pawl_release(void)
