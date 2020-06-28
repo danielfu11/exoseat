@@ -12,22 +12,26 @@
 #include "inc/drv8305_config.h"
 #include "inc/timer.h"
 #include "inc/speed_control.h"
-#include "inc/spi.h"
+//#include "inc/spi.h"
 #include "inc/debug.h"
 #include "inc/state_machine.h"
 #include "inc/command_queue.h"
 #include "inc/user_control.h"
-#include "inc/battery_monitor.h"
+#include "inc/prox_sense.h"
 
 extern volatile bool new_hall_state;
+extern volatile bool is_hall_prox_on_latch;
+
+extern Uint16 RamfuncsLoadStart;
+extern Uint16 RamfuncsLoadEnd;
+extern Uint16 RamfuncsRunStart;
+extern Uint16 RamfuncsLoadSize;
 
 DCL_PID pid_controller = PID_DEFAULTS;  //initialize before interrupts turn on
 float reference;                        // controller set-point reference (rk)
 float feedback;                         // measured feedback value (yk)
 float saturation;                       // external output clamp flag (lk)
 float control_output;                   // output of controller block (uk)
-
-volatile Uint16 PVDD;
 
 command_queue_t command_q =
 {
@@ -36,11 +40,18 @@ command_queue_t command_q =
  .size = 0,
 };
 
-//
-//extern volatile Uint16 rdata_spi;
-//extern volatile Uint8 spi_done;
-//
-//Uint16 ov_vds_fault, ic_fault, vgs_fault, test_reg, warn_watchdog;
+drv8305_fault_regs_t fault_regs =
+{
+ .ic_faults = 0,
+ .ov_vds_faults = 0,
+ .vgs_faults = 0,
+ .warnings = 0,
+};
+
+direction_e direction;
+
+//#define DISABLE_STATE_MACHINE
+//#define FLASH_MODE
 
 void main(void)
 {
@@ -65,6 +76,32 @@ void main(void)
     // is not used in this example.  This is useful for debug purposes.
     InitPieVectTable();
 
+
+
+
+#ifdef FLASH_MODE
+    //
+    // Copy time critical code and Flash setup code to RAM
+    // This includes the following ISR functions: epwm1_timer_isr(),
+    // epwm2_timer_isr(), epwm3_timer_isr and and InitFlash();
+    // The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
+    // symbols are created by the linker. Refer to the F2808.cmd file.
+    //
+#ifdef _FLASH
+    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (Uint32)&RamfuncsLoadSize);
+#endif
+    //
+    // Call Flash Initialization to setup flash waitstates
+    // This function must reside in RAM
+    //
+    InitFlash();
+#endif
+
+
+
+
+
+
     // Initialize timer
     timer_init();
 
@@ -83,8 +120,14 @@ void main(void)
     // Initialize UART
     usr_ctrl_comm_init();
 
-    // Initialize ADC for battery monitor
-    battery_monitor_init();
+    // Initialize hall sensor GPIO pins
+    hall_prox_sense_init();
+
+    // Initialize SPI peripheral
+    spi_init();
+
+    // Initialize ADC peripheral
+    v_c_monitor_init();
 
     // Enable global interrupts
     EINT;
@@ -94,55 +137,74 @@ void main(void)
     delay_1ms();
     // TODO: Disable drv8305 during IDLE state?
 
-    // Initialize SPI peripheral
-    spi_init();
+    if(!initialize_drv8305()){
+        //DELAY_US(1000000);
+        if(!initialize_drv8305()){
+                while(1); //for debug if error
+                //state = ERROR;
+            }
+    }
 
-    //Debug comm init
-    //debug_comm_init();
+    direction = CW; //CW = wrap up
 
+#ifdef DISABLE_STATE_MACHINE
     // Read initial hall sensor states
     Uint8 hall_state = read_hall_states();
 
-    // Commutate
-    phase_drive_s drive_state = next_commutation_state(CW, hall_state, true);
+    // Commutate=-
+    phase_drive_s drive_state = next_commutation_state(direction, hall_state, true);
+#endif
 
-
-   // send_spi_control_word(SPI_READ, 0x5, 0);
-
-
-    int i = 0;
+    int hall_cntr = 0; //for debugging
 
     commands_e received_command = NO_COMMAND;
 
-//    queue_push(&command_q, PULL_ME_UP);
-    //usr_ctrl_send_msg(0x41);
+#ifdef DISABLE_STATE_MACHINE
+    int i;
+#endif
 
     while (1)
     {
+
+        if(!read_drv8305_fault_regs(&fault_regs))
+        {
+            //while(1); //stop to check fault (only keep for debugging)
+        }
+
+        if(is_hall_prox_on_latch)
+        {
+            hall_cntr++;
+           // is_hall_prox_on_latch = false;
+        }
+
         if (fault_cleared())
         {
-//            // If new command
-//            if (!queue_pop(&command_q, &received_command))
-//            {
-//                //__asm("     ESTOP0");
-//            }
-//            state_machine(received_command);
+#ifndef DISABLE_STATE_MACHINE
+            // If new command
+            if (!queue_pop(&command_q, &received_command))
+            {
+                //__asm("     ESTOP0");
+                received_command = NO_COMMAND; //if there is no new command
+            }
+            state_machine(received_command);
+#else
             if (new_hall_state)
             {
                 feedback = (float) calculate_speed();
                 //speed_arr[i] = feedback;
                 hall_state = read_hall_states();
-                drive_state = next_commutation_state(CW, hall_state, false);
+                drive_state = next_commutation_state(direction, hall_state, false);
                 new_hall_state = false;
                 i++;
                 if (i == 12) i = 0;
                 //if (i == 2) blah = 1;
             }
+#endif
         }
         else
         {
-            enable_drv8305();
-            delay_1ms();
+//            enable_drv8305();
+//            delay_1ms();
         }
     }
 }

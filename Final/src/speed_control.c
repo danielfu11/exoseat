@@ -16,7 +16,7 @@ extern float saturation; // external output clamp flag (lk)
 
 void controller_init(void)
 {
-    update_reference(1000.0f); // initial value for control reference -- start with the motor off
+    update_reference(700.0f); // initial value for control reference -- start with the motor off
 
     //TODO: add SPS and CSS
     /* initialize controller variables (right now just unity controller) */
@@ -39,8 +39,8 @@ void controller_init(void)
 void update_reference(float32_t new_ref)
 {
     reference = new_ref;
-    pid_controller.Umax = 2640.0f - reference; // Max Duty Cycle is 80%
-    pid_controller.Umin = 123.8f - reference; // Min Duty Cycle is 75%
+    pid_controller.Umax = 2640.0f - reference;
+    pid_controller.Umin = 123.8f - reference;
 }
 
 
