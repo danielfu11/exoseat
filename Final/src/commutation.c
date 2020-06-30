@@ -13,11 +13,9 @@
 #define INDEPENDENT_PWM    1
 #define COMPLEMENTARY_PWM  0
 
-#ifdef FLASH_MODE
 #pragma CODE_SECTION(epwm1_isr, "ramfuncs");
 #pragma CODE_SECTION(epwm2_isr, "ramfuncs");
 #pragma CODE_SECTION(epwm3_isr, "ramfuncs");
-#endif
 
 volatile Uint32 duty_cycle = 1; //this doesn't matter when speed control system is active
 extern volatile bool new_hall_state;

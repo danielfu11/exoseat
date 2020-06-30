@@ -25,10 +25,8 @@ volatile Uint16 rx_int_cnt;
 volatile Uint16 tx_int_cnt;
 volatile Uint8 spi_done = 0;
 
-#ifdef FLASH_MODE
 #pragma CODE_SECTION(spiTxFifoIsr, "ramfuncs");
 #pragma CODE_SECTION(spiRxFifoIsr, "ramfuncs");
-#endif
 
 __interrupt void spiTxFifoIsr(void);
 __interrupt void spiRxFifoIsr(void);
@@ -87,19 +85,11 @@ static inline void send_word_drv8305(Uint16 r_w, Uint16 addr, Uint16 data)
 
 bool initialize_drv8305(void)
 {
-    bool status = true;
-    if(!write_drv8305_reg(SPI_REG_ADDR_IC_OPERATION, 0x0620, IC_OPERATION_RSVD_MASK)) //disable PVDD_UVLO2 fault, enable OTSD (overtemp shutdown)
-    {
-        status = false;
-    }
-    if(!write_drv8305_reg(SPI_REG_ADDR_SHUNT_AMP_CTRL, 0x00FF, SHUNT_AMP_CTRL_RSVD_MASK)) //current shunt blank time = 10us, G = 80
-    {
-        status = false;
-    }
-    if(!write_drv8305_reg(SPI_REG_ADDR_VDS_SENSE_CTRL, 0x0000, VDS_SENSE_CTRL_RSVD_MASK)) //VDS_LEVEL = 0.060V (trip current = VDS_LEVEL/RDS_ON = 33A, RDS_ON = 1.8 mOhm)
-    {
-        status = false;
-    }
+    bool status = false;
+
+    while(!(status = write_drv8305_reg(SPI_REG_ADDR_IC_OPERATION, 0x0620, IC_OPERATION_RSVD_MASK))); //disable PVDD_UVLO2 fault, enable OTSD (overtemp shutdown)
+    while(!(status = write_drv8305_reg(SPI_REG_ADDR_SHUNT_AMP_CTRL, 0x00EA, SHUNT_AMP_CTRL_RSVD_MASK))); //current shunt blank time = 10us, G = 40
+    while(!(status = write_drv8305_reg(SPI_REG_ADDR_VDS_SENSE_CTRL, 0x0000, VDS_SENSE_CTRL_RSVD_MASK))); //VDS_LEVEL = 0.060V (trip current = VDS_LEVEL/RDS_ON = 33A, RDS_ON = 1.8 mOhm)
 
     return status;
 }
@@ -231,7 +221,7 @@ bool write_drv8305_reg(Uint16 address, Uint16 data, Uint16 rsvd_mask)
 
     DELAY_US(1000);
     read_check = read_drv8305_reg(address);
-    read_check = read_drv8305_reg(address);
+
     if((read_check & rsvd_mask) != (data & rsvd_mask)) //check that data was written correctly
     {
         status = false;

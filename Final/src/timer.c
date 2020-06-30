@@ -26,11 +26,9 @@ volatile bool delay_done = false;
 volatile Uint8 wrap_around = 0;
 volatile bool is_hall_prox_on_latch = false;
 
-#ifdef FLASH_MODE
 #pragma CODE_SECTION(cpu_timer0_isr, "ramfuncs");
 #pragma CODE_SECTION(cpu_timer1_isr, "ramfuncs");
 #pragma CODE_SECTION(cpu_timer2_isr, "ramfuncs");
-#endif
 
 __interrupt void cpu_timer0_isr(void);
 __interrupt void cpu_timer1_isr(void);

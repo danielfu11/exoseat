@@ -10,10 +10,8 @@
 #include "inc/user_control.h"
 #include "inc/command_queue.h"
 
-#ifdef FLASH_MODE
 #pragma CODE_SECTION(scibTxFifoIsr, "ramfuncs");
 #pragma CODE_SECTION(scibRxFifoIsr, "ramfuncs");
-#endif
 
 __interrupt void scibTxFifoIsr(void);
 __interrupt void scibRxFifoIsr(void);

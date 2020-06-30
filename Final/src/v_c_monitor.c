@@ -17,9 +17,7 @@ static volatile Uint16 ISENA;
 static volatile Uint16 ISENB;
 static volatile Uint16 ISENC;
 
-#ifdef FLASH_MODE
 #pragma CODE_SECTION(adc_isr, "ramfuncs");
-#endif
 
 __interrupt void adc_isr(void);
 

@@ -18,6 +18,7 @@
 #include "inc/command_queue.h"
 #include "inc/user_control.h"
 #include "inc/prox_sense.h"
+#include "inc/v_c_monitor.h"
 
 extern volatile bool new_hall_state;
 extern volatile bool is_hall_prox_on_latch;
@@ -50,8 +51,8 @@ drv8305_fault_regs_t fault_regs =
 
 direction_e direction;
 
-//#define DISABLE_STATE_MACHINE
-//#define FLASH_MODE
+#define DISABLE_STATE_MACHINE
+#define FLASH_MODE
 
 void main(void)
 {
@@ -87,9 +88,7 @@ void main(void)
     // The  RamfuncsLoadStart, RamfuncsLoadSize, and RamfuncsRunStart
     // symbols are created by the linker. Refer to the F2808.cmd file.
     //
-#ifdef _FLASH
     memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (Uint32)&RamfuncsLoadSize);
-#endif
     //
     // Call Flash Initialization to setup flash waitstates
     // This function must reside in RAM
@@ -137,15 +136,9 @@ void main(void)
     delay_1ms();
     // TODO: Disable drv8305 during IDLE state?
 
-    if(!initialize_drv8305()){
-        //DELAY_US(1000000);
-        if(!initialize_drv8305()){
-                while(1); //for debug if error
-                //state = ERROR;
-            }
-    }
+    while(!initialize_drv8305());
 
-    direction = CW; //CW = wrap up
+    direction = CCW; //CW = wrap up
 
 #ifdef DISABLE_STATE_MACHINE
     // Read initial hall sensor states
