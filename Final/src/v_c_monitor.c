@@ -12,12 +12,16 @@
 #define PVDD_THRESHOLD 2220 //2220 = 24v (less than 24V means 10% or less charge)
 #define PVDD_DISCARDVAL 250 //voltage when only the USB is plugged in
 
+#define ADC_MAX 4095
+#define ISEN_MAX 3500
+#define ISEN_MIN ADC_MAX - ISEN_MAX
+
 static volatile Uint16 PVDD;
 static volatile Uint16 ISENA;
 static volatile Uint16 ISENB;
 static volatile Uint16 ISENC;
 
-#pragma CODE_SECTION(adc_isr, "ramfuncs");
+//#pragma CODE_SECTION(adc_isr, "ramfuncs");
 
 __interrupt void adc_isr(void);
 
@@ -71,10 +75,15 @@ void v_c_monitor_init(void)
 }
 
 
-bool current_monitor(void)
+bool is_overcurrent(void)
 {
     bool status = false;
-
+    if(((ISENA > ISEN_MAX) || (ISENA < ISEN_MIN)) ||
+       ((ISENB > ISEN_MAX) || (ISENB < ISEN_MIN)) ||
+       ((ISENC > ISEN_MAX) || (ISENC < ISEN_MIN)))
+    {
+        status = true;
+    }
 }
 
 bool battery_low(void)

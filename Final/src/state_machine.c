@@ -30,7 +30,7 @@
 
 
 #define DISABLE_SLIP_CORRECTION
-
+//#define DISABLE_STARTUP_CALIBRATION
 
 #ifdef DISABLE_STARTUP_CALIBRATION
 state_e state = IDLE;
@@ -144,11 +144,11 @@ inline static void transition_to_error_state(void)
 void state_machine(commands_e command)
 {
     phase_drive_s drive_state;
-//
-//    if(overcurrent())
-//    {
-//        state = ERROR;
-//    }
+
+    if(is_overcurrent())
+    {
+        transition_to_error_state();
+    }
 //    if(low_battery())
 //    {
 //
@@ -329,7 +329,7 @@ void state_machine(commands_e command)
             break;
 
         case ERROR:
-            while(1);
+            __asm("     ESTOP0");
             break;
 
         default:

@@ -25,8 +25,8 @@ volatile Uint16 rx_int_cnt;
 volatile Uint16 tx_int_cnt;
 volatile Uint8 spi_done = 0;
 
-#pragma CODE_SECTION(spiTxFifoIsr, "ramfuncs");
-#pragma CODE_SECTION(spiRxFifoIsr, "ramfuncs");
+//#pragma CODE_SECTION(spiTxFifoIsr, "ramfuncs");
+//#pragma CODE_SECTION(spiRxFifoIsr, "ramfuncs");
 
 __interrupt void spiTxFifoIsr(void);
 __interrupt void spiRxFifoIsr(void);

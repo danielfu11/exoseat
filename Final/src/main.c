@@ -51,8 +51,8 @@ drv8305_fault_regs_t fault_regs =
 
 direction_e direction;
 
-#define DISABLE_STATE_MACHINE
-#define FLASH_MODE
+//#define DISABLE_STATE_MACHINE
+//#define FLASH_MODE
 
 void main(void)
 {
@@ -138,7 +138,7 @@ void main(void)
 
     while(!initialize_drv8305());
 
-    direction = CCW; //CW = wrap up
+    direction = CW; //CW = wrap up
 
 #ifdef DISABLE_STATE_MACHINE
     // Read initial hall sensor states

@@ -21,9 +21,9 @@ static volatile Uint32 hall_tmr_cur = 0;
 
 extern volatile Uint8 wrap_around;
 
-#pragma CODE_SECTION(xint1_isr, "ramfuncs");
-#pragma CODE_SECTION(xint2_isr, "ramfuncs");
-#pragma CODE_SECTION(xint3_isr, "ramfuncs");
+//#pragma CODE_SECTION(xint1_isr, "ramfuncs");
+//#pragma CODE_SECTION(xint2_isr, "ramfuncs");
+//#pragma CODE_SECTION(xint3_isr, "ramfuncs");
 
 // ISR prototypes
 __interrupt void xint1_isr(void);

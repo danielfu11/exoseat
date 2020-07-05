@@ -13,7 +13,7 @@
 #define OVERCURRENT_VAL_VOLTS       (OVERCURRENT_VAL_AMPS*CURR_SENSE_RESISTOR_VAL)
 
 void v_c_monitor_init(void);
-bool overcurrent(void);
+bool is_overcurrent(void);
 bool battery_low(void);
 
 #endif /* INC_V_C_MONITOR_H_ */
